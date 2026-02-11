@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f1e8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Daily Macros" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Daily Macros</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div class="header-tools">
+          <div>
+            <h1>Daily Macros</h1>
+            <p>Log food in plain text and track what's left for today.</p>
+          </div>
+          <button type="button" id="compact-toggle" class="secondary">Compact Mode: Off</button>
+        </div>
+      </header>
+
+      <section class="card stats">
+        <h2 id="today-heading">Today</h2>
+        <div class="stats-grid" id="stats-grid"></div>
+      </section>
+
+      <section class="card">
+        <h2>Add Meal (Plain Text)</h2>
+        <p class="hint">Examples: <code>200 grams chicken breast, 1 cup rice, 1 cup dal</code>, <code>3 egg whites + 1 whole egg</code>, <code>2 banana 34g each</code></p>
+        <form id="meal-form">
+          <textarea id="meal-input" rows="4" placeholder="Type food names with weights (g/ml)."></textarea>
+          <div class="grid-slot">
+            <label>Meal Slot
+              <select id="meal-slot" required>
+                <option>Pre Workout</option>
+                <option>Breakfast</option>
+                <option>Mid Morning</option>
+                <option>Lunch</option>
+                <option>Mid Evening</option>
+                <option>Dinner</option>
+              </select>
+            </label>
+            <button type="submit">Log Meal</button>
+          </div>
+          <div class="grid-slot">
+            <label>Quick Action
+              <select id="quick-action">
+                <option value="suggest-slot">Suggest Meal For Slot</option>
+                <option value="suggest-plan">Suggest Remaining Day Plan</option>
+                <option value="save-unparsed">Save Unparsed Item</option>
+                <option value="clear-slot">Clear Selected Slot</option>
+                <option value="clear-day">Clear Today</option>
+              </select>
+            </label>
+            <button type="button" id="run-action" class="secondary">Run Action</button>
+          </div>
+          <p id="parse-message" class="message"></p>
+        </form>
+        <div id="suggestion-box" class="suggestion-box"></div>
+      </section>
+
+      <section class="card">
+        <h2>Targets By Day</h2>
+        <form id="targets-form" class="grid-targets">
+          <label>Day
+            <select id="target-day" required>
+              <option>Sunday</option>
+              <option>Monday</option>
+              <option>Tuesday</option>
+              <option>Wednesday</option>
+              <option>Thursday</option>
+              <option>Friday</option>
+              <option>Saturday</option>
+            </select>
+          </label>
+          <label>Calories
+            <input type="number" id="target-calories" min="0" step="1" required />
+          </label>
+          <label>Protein (g)
+            <input type="number" id="target-protein" min="0" step="0.1" required />
+          </label>
+          <label>Carbs (g)
+            <input type="number" id="target-carbs" min="0" step="0.1" required />
+          </label>
+          <label>Fat (g)
+            <input type="number" id="target-fat" min="0" step="0.1" required />
+          </label>
+          <button type="submit">Save Day Target</button>
+        </form>
+        <p id="target-message" class="message"></p>
+        <div id="targets-visual" class="targets-visual"></div>
+      </section>
+
+      <section class="card">
+        <h2>Meal Flow & Logs</h2>
+        <div id="meal-graph" class="meal-graph"></div>
+        <div id="entries-container"></div>
+      </section>
+    </main>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
