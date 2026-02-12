@@ -285,12 +285,16 @@ const STORAGE_KEYS = {
 };
 
 const aliasLookup = buildAliasLookup();
-const todayDateKey = getLocalDateKey();
-const todayDayName = getWeekDayName();
+let activeDate = new Date();
 
 const targetsForm = document.getElementById("targets-form");
 const targetDay = document.getElementById("target-day");
 const targetMessage = document.getElementById("target-message");
+const logDateInput = document.getElementById("log-date");
+const prevDayBtn = document.getElementById("prev-day");
+const nextDayBtn = document.getElementById("next-day");
+const gotoTodayBtn = document.getElementById("goto-today");
+const viewBadge = document.getElementById("view-badge");
 
 const mealForm = document.getElementById("meal-form");
 const mealInput = document.getElementById("meal-input");
@@ -348,6 +352,37 @@ function getLocalDateKey(date = new Date()) {
 
 function getWeekDayName(date = new Date()) {
   return WEEK_DAYS[date.getDay()];
+}
+
+function parseDateKey(dateKey) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  if (!year || !month || !day) return new Date();
+  return new Date(year, month - 1, day);
+}
+
+function getActiveDateKey() {
+  return getLocalDateKey(activeDate);
+}
+
+function getActiveDayName() {
+  return getWeekDayName(activeDate);
+}
+
+function isActiveToday() {
+  return getActiveDateKey() === getLocalDateKey(new Date());
+}
+
+function formatActiveDateLabel() {
+  return activeDate.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  });
+}
+
+function shiftActiveDate(days) {
+  activeDate = new Date(activeDate.getFullYear(), activeDate.getMonth(), activeDate.getDate() + days);
 }
 
 function normalizeFood(text) {
@@ -676,12 +711,12 @@ function saveLogs(logs) {
 
 function getTodayEntries() {
   const logs = loadLogs();
-  return logs[todayDateKey] || [];
+  return logs[getActiveDateKey()] || [];
 }
 
 function setTodayEntries(entries) {
   const logs = loadLogs();
-  logs[todayDateKey] = entries;
+  logs[getActiveDateKey()] = entries;
   saveLogs(logs);
 }
 
@@ -779,9 +814,9 @@ function addMealForSlot(slotName) {
   setTodayEntries(entries.concat(withSlot));
 
   if (unknown.length) {
-    parseMessage.textContent = `Saved ${parsed.length} item(s) to ${slotName}. Unmatched: ${unknown.join(", ")}. Use "Save Unparsed Item".`;
+    parseMessage.textContent = `Saved ${parsed.length} item(s) to ${slotName} on ${getActiveDateKey()}. Unmatched: ${unknown.join(", ")}. Use "Save Unparsed Item".`;
   } else {
-    parseMessage.textContent = `Saved ${parsed.length} item(s) to ${slotName}.`;
+    parseMessage.textContent = `Saved ${parsed.length} item(s) to ${slotName} on ${getActiveDateKey()}.`;
   }
 
   mealInput.value = "";
@@ -913,7 +948,7 @@ function renderSuggestion(slotName) {
   const entries = getTodayEntries();
   const totals = computeTotals(entries);
   const targetsByDay = loadTargetsByDay();
-  const todayTargets = targetsByDay[todayDayName] || DEFAULT_TARGET;
+  const todayTargets = targetsByDay[getActiveDayName()] || DEFAULT_TARGET;
   const suggestion = estimateMealForSlot(slotName, entries, totals, todayTargets);
 
   const remaining = suggestion.remaining;
@@ -1013,7 +1048,7 @@ function renderRemainingPlan(startSlot) {
   const entries = getTodayEntries();
   const totals = computeTotals(entries);
   const targetsByDay = loadTargetsByDay();
-  const todayTargets = targetsByDay[todayDayName] || DEFAULT_TARGET;
+  const todayTargets = targetsByDay[getActiveDayName()] || DEFAULT_TARGET;
   const result = buildRemainingPlan(startSlot, entries, totals, todayTargets);
 
   const planLines = result.plan
@@ -1057,7 +1092,7 @@ function renderTargetsVisual(targetsByDay) {
   const cards = WEEK_DAYS.map((day) => {
     const target = targetsByDay[day] || DEFAULT_TARGET;
     const pct = clamp((target.calories / maxCalories) * 100, 0, 100);
-    const dayClass = day === todayDayName ? "day-card today" : "day-card";
+    const dayClass = day === getActiveDayName() ? "day-card today" : "day-card";
     return `
       <button type="button" class="${dayClass}" data-day-card="${day}">
         <div class="mini-ring" style="--pct:${round(pct)};">
@@ -1183,9 +1218,11 @@ function render() {
   const entries = getTodayEntries();
   const totals = computeTotals(entries);
   const targetsByDay = loadTargetsByDay();
-  const todayTargets = targetsByDay[todayDayName] || DEFAULT_TARGET;
+  const todayTargets = targetsByDay[getActiveDayName()] || DEFAULT_TARGET;
 
-  todayHeading.textContent = `Today (${todayDayName})`;
+  todayHeading.textContent = `Viewing: ${formatActiveDateLabel()} (${getActiveDayName()})`;
+  viewBadge.textContent = isActiveToday() ? "Today View" : "Historical View";
+  logDateInput.value = getActiveDateKey();
   renderEntriesTable(entries, totals);
   renderMealGraph(entries);
   renderTargetsVisual(targetsByDay);
@@ -1197,7 +1234,7 @@ function render() {
     buildStatCard("Fat (g)", totals.fat, todayTargets.fat)
   ].join("");
 
-  const selectedDay = targetDay.value || todayDayName;
+  const selectedDay = targetDay.value || getActiveDayName();
   refreshTargetFormForDay(selectedDay, targetsByDay);
 
   if (!suggestionBox.innerHTML.trim()) {
@@ -1301,6 +1338,31 @@ targetsForm.addEventListener("submit", (e) => {
   render();
 });
 
+logDateInput.addEventListener("change", () => {
+  if (!logDateInput.value) return;
+  activeDate = parseDateKey(logDateInput.value);
+  targetDay.value = getActiveDayName();
+  render();
+});
+
+prevDayBtn.addEventListener("click", () => {
+  shiftActiveDate(-1);
+  targetDay.value = getActiveDayName();
+  render();
+});
+
+nextDayBtn.addEventListener("click", () => {
+  shiftActiveDate(1);
+  targetDay.value = getActiveDayName();
+  render();
+});
+
+gotoTodayBtn.addEventListener("click", () => {
+  activeDate = new Date();
+  targetDay.value = getActiveDayName();
+  render();
+});
+
 targetDay.addEventListener("change", () => {
   const targetsByDay = loadTargetsByDay();
   refreshTargetFormForDay(targetDay.value, targetsByDay);
@@ -1339,14 +1401,22 @@ runActionBtn.addEventListener("click", () => {
     return;
   }
   if (action === "clear-slot") {
+    if (!isActiveToday()) {
+      const ok = window.confirm(`Clear "${mealSlot.value}" entries for ${getActiveDateKey()}?`);
+      if (!ok) return;
+    }
     clearEntriesBySlot(mealSlot.value);
-    parseMessage.textContent = `Cleared ${mealSlot.value} entries.`;
+    parseMessage.textContent = `Cleared ${mealSlot.value} entries for ${getActiveDateKey()}.`;
     render();
     return;
   }
   if (action === "clear-day") {
+    if (!isActiveToday()) {
+      const ok = window.confirm(`Clear all entries for ${getActiveDateKey()}?`);
+      if (!ok) return;
+    }
     setTodayEntries([]);
-    parseMessage.textContent = "Cleared today's entries.";
+    parseMessage.textContent = `Cleared entries for ${getActiveDateKey()}.`;
     suggestionBox.innerHTML = "";
     render();
   }
@@ -1386,8 +1456,12 @@ entriesContainer.addEventListener("click", (event) => {
   if (action === "clear-slot") {
     const slot = target.dataset.slot;
     if (slot) {
+      if (!isActiveToday()) {
+        const ok = window.confirm(`Clear "${slot}" entries for ${getActiveDateKey()}?`);
+        if (!ok) return;
+      }
       clearEntriesBySlot(slot);
-      parseMessage.textContent = `Cleared ${slot} entries.`;
+      parseMessage.textContent = `Cleared ${slot} entries for ${getActiveDateKey()}.`;
       render();
     }
     return;
@@ -1433,5 +1507,6 @@ if ("serviceWorker" in navigator) {
 
 isCompactMode = loadCompactMode();
 applyCompactMode();
-targetDay.value = todayDayName;
+targetDay.value = getActiveDayName();
+logDateInput.value = getActiveDateKey();
 render();

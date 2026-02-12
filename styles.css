@@ -74,6 +74,13 @@ h2 {
   align-items: end;
 }
 
+.date-tools {
+  display: grid;
+  grid-template-columns: auto minmax(160px, 1fr) auto auto;
+  gap: 8px;
+  align-items: end;
+}
+
 label {
   display: grid;
   gap: 6px;
@@ -534,6 +541,7 @@ body.compact-mode .split-bar {
 
 @media (max-width: 720px) {
   .grid-4,
+  .date-tools,
   .grid-targets,
   .grid-slot,
   .stats-grid,
@@ -548,6 +556,7 @@ body.compact-mode .split-bar {
 
 @media (max-width: 460px) {
   .grid-4,
+  .date-tools,
   .grid-targets,
   .grid-slot,
   .stats-grid,
