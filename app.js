@@ -1517,7 +1517,11 @@ if ("serviceWorker" in navigator) {
       return;
     }
 
-    navigator.serviceWorker.register("./sw.js").catch(() => {});
+    const SW_VERSION = "2026-02-12-v3";
+    navigator.serviceWorker
+      .register(`./sw.js?v=${SW_VERSION}`)
+      .then((reg) => reg.update())
+      .catch(() => {});
   });
 }
 
