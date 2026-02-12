@@ -147,6 +147,18 @@ button.secondary {
   margin-top: 10px;
 }
 
+#target-editor-toggle {
+  margin-top: 10px;
+}
+
+.target-editor {
+  margin-top: 10px;
+}
+
+.target-editor.collapsed {
+  display: none;
+}
+
 .day-card {
   border: 1px solid var(--border);
   background: #fff;
@@ -541,31 +553,76 @@ body.compact-mode .split-bar {
 
 @media (max-width: 720px) {
   .grid-4,
-  .date-tools,
   .grid-targets,
   .grid-slot,
-  .stats-grid,
   .targets-visual {
     grid-template-columns: 1fr 1fr;
   }
 
+  .date-tools {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 8px;
+    align-items: end;
+    padding-bottom: 2px;
+  }
+
+  .date-tools > * {
+    flex: 0 0 auto;
+  }
+
+  .date-tools label {
+    min-width: 180px;
+  }
+
+  .stats-grid {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    gap: 10px;
+    padding-bottom: 4px;
+  }
+
+  .stats-grid .stat {
+    min-width: 280px;
+    width: 85%;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .targets-visual {
+    display: flex;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .targets-visual .day-card {
+    min-width: 120px;
+    flex: 0 0 auto;
+  }
+
   .graph-grid {
-    grid-template-columns: repeat(3, minmax(90px, 1fr));
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding-bottom: 4px;
+  }
+
+  .graph-grid .graph-slot {
+    min-width: 110px;
+    flex: 0 0 auto;
   }
 }
 
 @media (max-width: 460px) {
   .grid-4,
-  .date-tools,
   .grid-targets,
   .grid-slot,
-  .stats-grid,
   .targets-visual {
     grid-template-columns: 1fr;
-  }
-
-  .graph-grid {
-    grid-template-columns: repeat(2, minmax(90px, 1fr));
   }
 
   .actions {

@@ -290,6 +290,7 @@ let activeDate = new Date();
 const targetsForm = document.getElementById("targets-form");
 const targetDay = document.getElementById("target-day");
 const targetMessage = document.getElementById("target-message");
+const targetEditorToggle = document.getElementById("target-editor-toggle");
 const logDateInput = document.getElementById("log-date");
 const prevDayBtn = document.getElementById("prev-day");
 const nextDayBtn = document.getElementById("next-day");
@@ -319,6 +320,7 @@ const targetFat = document.getElementById("target-fat");
 let lastUnknownItems = [];
 let isCompactMode = false;
 let expandedSlot = "";
+let targetEditorOpen = true;
 
 function round(n, decimals = 1) {
   return Number(n.toFixed(decimals));
@@ -681,6 +683,11 @@ function saveCompactMode(value) {
 function applyCompactMode() {
   document.body.classList.toggle("compact-mode", isCompactMode);
   compactToggle.textContent = `Compact Mode: ${isCompactMode ? "On" : "Off"}`;
+}
+
+function applyTargetEditorState() {
+  targetsForm.classList.toggle("collapsed", !targetEditorOpen);
+  targetEditorToggle.textContent = targetEditorOpen ? "Hide Target Editor" : "Edit Selected Day Target";
 }
 
 function findCustomFoodKey(text, customFoods) {
@@ -1236,6 +1243,7 @@ function render() {
 
   const selectedDay = targetDay.value || getActiveDayName();
   refreshTargetFormForDay(selectedDay, targetsByDay);
+  applyTargetEditorState();
 
   if (!suggestionBox.innerHTML.trim()) {
     suggestionBox.innerHTML = "Click \"Suggest Meal For Slot\" or \"Suggest Remaining Day Plan\" to generate pattern-based estimates.";
@@ -1366,7 +1374,9 @@ gotoTodayBtn.addEventListener("click", () => {
 targetDay.addEventListener("change", () => {
   const targetsByDay = loadTargetsByDay();
   refreshTargetFormForDay(targetDay.value, targetsByDay);
+  targetEditorOpen = true;
   targetMessage.textContent = "";
+  applyTargetEditorState();
 });
 
 targetsVisual.addEventListener("click", (event) => {
@@ -1377,8 +1387,14 @@ targetsVisual.addEventListener("click", (event) => {
   targetDay.value = day;
   const targetsByDay = loadTargetsByDay();
   refreshTargetFormForDay(day, targetsByDay);
+  targetEditorOpen = true;
   targetMessage.textContent = `${day} selected.`;
   render();
+});
+
+targetEditorToggle.addEventListener("click", () => {
+  targetEditorOpen = !targetEditorOpen;
+  applyTargetEditorState();
 });
 
 mealForm.addEventListener("submit", (e) => {
@@ -1507,6 +1523,8 @@ if ("serviceWorker" in navigator) {
 
 isCompactMode = loadCompactMode();
 applyCompactMode();
+targetEditorOpen = window.matchMedia("(max-width: 720px)").matches ? false : true;
+applyTargetEditorState();
 targetDay.value = getActiveDayName();
 logDateInput.value = getActiveDateKey();
 render();
